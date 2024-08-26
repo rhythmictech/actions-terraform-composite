@@ -19,7 +19,7 @@ runs:
             terraform_tflint_deep,
             no-commit-to-branch,
             terraform_tflint_nocreds,
-            terraform_tfsec
+            terraform_trivy
             
       - name: Trivy scan
         uses: aquasecurity/trivy-action@master
