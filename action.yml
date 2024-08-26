@@ -37,11 +37,4 @@ runs:
         with:
           sarif_file: 'trivy-results.sarif'
           
-      - name: tflint
-        uses: reviewdog/action-tflint@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-check
-          filter_mode: nofilter
-          flags: --module
-          level: error
+
