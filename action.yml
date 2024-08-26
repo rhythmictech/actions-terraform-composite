@@ -1,0 +1,47 @@
+name: 'actions-terraform-composite'
+description: 'A composite action to combine our favorite terraform-related GitHub Actions'
+runs:
+  using: "composite"
+  steps:
+      # - uses: actions/checkout@v2
+      # - name: Set up Python
+      #   uses: actions/setup-python@v2
+      # - name: Install prerequisites
+      #   run: ./bin/install-ubuntu.sh
+      # - name: initialize Terraform
+      #   run: terraform init --backend=false
+      - name: pre-commit
+        uses: pre-commit/action@v2.0.3
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+          # many of these are covered by better reviewdog linters below
+          SKIP: >-
+            terraform_tflint_deep,
+            no-commit-to-branch,
+            terraform_tflint_nocreds,
+            terraform_tfsec
+            
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          hide-progress: false
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+          
+      - name: tflint
+        uses: reviewdog/action-tflint@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-check
+          filter_mode: nofilter
+          flags: --module
+          level: error
